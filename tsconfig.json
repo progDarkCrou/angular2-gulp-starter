@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules"
+    ],
+    "types": [
+      "node",
+      "zone.js",
+      "core-js"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
