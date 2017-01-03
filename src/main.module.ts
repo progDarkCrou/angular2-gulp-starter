@@ -1,16 +1,24 @@
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { AppComponent } from './app.component';
-/**
- * Created by avorona on 2016-10-06.
- */
+import { NgModule } from "@angular/core";
+import { BrowserModule } from "@angular/platform-browser";
+import { AppComponent } from "./components/app.component";
+import { routes } from "./main.routes";
+import { HomeComponent } from "./components/home.component";
+import { APP_BASE_HREF } from "@angular/common";
 
 @NgModule({
   imports: [
-      BrowserModule
+    BrowserModule,
+    routes
   ],
   declarations: [
-      AppComponent
+    AppComponent,
+    HomeComponent
+  ],
+  providers: [
+    {
+      provide: APP_BASE_HREF,
+      useValue: '/'
+    }
   ],
   bootstrap: [AppComponent]
 })

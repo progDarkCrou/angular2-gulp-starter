@@ -1,11 +1,9 @@
 import { Component } from '@angular/core';
-/**
- * Created by avorona on 2016-10-05.
- */
 
 @Component({
   moduleId: module.id,
-  selector: 'app'
+  selector: 'app',
+  templateUrl: 'app.component.html'
 })
 export class AppComponent {
 }

@@ -1,22 +1,17 @@
-/**
- * Created by avorona on 2016-10-05.
- */
-
-import * as bs from 'browser-sync';
+import * as bs from "browser-sync";
 import gulp = require('gulp');
+
 let template = require('gulp-template');
 let cache = require('gulp-cached');
 let ts = require('gulp-typescript');
 
-let tsProject = ts.createProject('tsconfig.json');
+let tsProject = ts.createProject('src/tsconfig.json');
 
-const enum ENV {
-  PROD,
-  DEV
-}
+let argv = process.argv;
+let env: string = argv.indexOf('serve.prod') !== -1 || argv.indexOf('build') != -1 ? 'PROD' : 'DEV';
 
 class Config {
-  public env: ENV = ENV.DEV;
+  public env: string = env;
 
   public src = 'src';
   public dist = 'dist';
@@ -39,23 +34,43 @@ gulp.task('compile.ts.watch', ['compile.ts'], () => {
   gulp.watch(`${config.src}/**/*.ts`, ['compile.ts']);
 });
 
-gulp.task('index.tmp', () => {
-  return gulp.src(`${config.src}/index.html`)
+// gulp.task('index.tmp', () => {
+//   let indexCache = cache('index');
+//   return gulp.src(`${config.src}/index.html`)
+//       .pipe(indexCache)
+//       .pipe(template(config))
+//       .pipe(gulp.dest(config.tmp));
+// });
+//
+// gulp.task('index.watch', ['index.tmp'], () => {
+//   gulp.watch(`${config.src}/index.html`, ['index.tmp']);
+// });
+//
+// gulp.task('index.prod', ['index.tmp'], () => {
+//   return gulp.src(`${config.src}/index.html`)
+//       .pipe(template(config))
+//       .pipe(gulp.dest(config.prod));
+// });
+
+gulp.task('html.tmp', () => {
+  let htmlCache = cache('html');
+  return gulp.src(`${config.src}/**/*.html`)
+      .pipe(htmlCache)
       .pipe(template(config))
-      .pipe(gulp.dest(`${config.tmp}`));
+      .pipe(gulp.dest(config.tmp));
 });
 
-gulp.task('index.watch', ['index.tmp'], () => {
-  gulp.watch(`${config.src}/index.html`, ['index.tmp']);
+gulp.task('html.watch', ['html.tmp'], () => {
+  gulp.watch(`${config.src}/**/*.html`, ['html.tmp']);
 });
 
-gulp.task('index.prod', ['index.tmp'], () => {
-  return gulp.src(`${config.src}/index.html`)
+gulp.task('html.prod', ['html.tmp'], () => {
+  return gulp.src(`${config.src}/**/*.html`)
       .pipe(template(config))
-      .pipe(gulp.dest(`${config.prod}`));
+      .pipe(gulp.dest(config.prod));
 });
 
-gulp.task('bundle.ts', () => {
+gulp.task('bundle.ts', ['compile.ts'], () => {
   let sjb = new (require('systemjs-builder'))({
     defaultJSExtensions: true,
     // baseURL: `${config.tmp}`,
@@ -71,11 +86,7 @@ gulp.task('bundle.ts', () => {
         main: 'index.js',
         defaultExtension: 'js'
       },
-      '@angular/core': {
-        main: 'index.js',
-        defaultExtension: 'js'
-      },
-      '@angular/platform-browser': {
+      '@angular/common': {
         main: 'index.js',
         defaultExtension: 'js'
       },
@@ -83,7 +94,27 @@ gulp.task('bundle.ts', () => {
         main: 'index.js',
         defaultExtension: 'js'
       },
-      '@angular/common': {
+      '@angular/core': {
+        main: 'index.js',
+        defaultExtension: 'js'
+      },
+      '@angular/forms': {
+        main: 'index.js',
+        defaultExtension: 'js'
+      },
+      '@angular/http': {
+        main: 'index.js',
+        defaultExtension: 'js'
+      },
+      '@angular/platform-browser': {
+        main: 'index.js',
+        defaultExtension: 'js'
+      },
+      '@angular/platform-browser-dynamic': {
+        main: 'index.js',
+        defaultExtension: 'js'
+      },
+      '@angular/router': {
         main: 'index.js',
         defaultExtension: 'js'
       },
@@ -96,7 +127,7 @@ gulp.task('bundle.ts', () => {
   return sjb.buildStatic(`${config.tmp}/main.js`, `${config.prod}/main.js`);
 });
 
-gulp.task('serve.dev', ['compile.ts.watch', 'index.watch'], () => {
+gulp.task('serve.dev', ['compile.ts.watch', 'html.watch'], () => {
   bs.init({
     port: 5555,
     files: [`${config.tmp}/**/*.{html,htm,css,js}`],
@@ -110,7 +141,11 @@ gulp.task('serve.dev', ['compile.ts.watch', 'index.watch'], () => {
   });
 });
 
-gulp.task('serve.prod', ['bundle.ts', 'index.prod'], () => {
+// === PRODUCTION ===
+
+gulp.task('build', ['bundle.ts', 'html.prod']);
+
+gulp.task('serve.prod', ['build'], () => {
   bs.init({
     port: 9999,
     files: [`${config.prod}/**/*.{html,htm,css,js}`],

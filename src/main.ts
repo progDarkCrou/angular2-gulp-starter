@@ -1,8 +1,4 @@
-import { platformBrowser } from '@angular/platform-browser';
-import MainModule from './main.module';
+import MainModule from "./main.module";
+import { platformBrowserDynamic } from "@angular/platform-browser-dynamic";
 
-/**
- * Created by avorona on 2016-10-05.
- */
-
-platformBrowser().bootstrapModule(MainModule);
+platformBrowserDynamic().bootstrapModule(MainModule);
