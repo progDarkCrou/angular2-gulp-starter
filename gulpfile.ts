@@ -1,14 +1,18 @@
-import * as bs from "browser-sync";
+import * as browserSync from "browser-sync";
 import gulp = require('gulp');
+import concat = require('gulp-concat');
 
 let template = require('gulp-template');
 let cache = require('gulp-cached');
 let ts = require('gulp-typescript');
+let Builder = require('systemjs-builder');
 
 let tsProject = ts.createProject('src/tsconfig.json');
 
 let argv = process.argv;
 let env: string = argv.indexOf('serve.prod') !== -1 || argv.indexOf('build') != -1 ? 'PROD' : 'DEV';
+
+let bs = browserSync.create();
 
 class Config {
   public env: string = env;
@@ -71,7 +75,7 @@ gulp.task('html.prod', ['html.tmp'], () => {
 });
 
 gulp.task('bundle.ts', ['compile.ts'], () => {
-  let sjb = new (require('systemjs-builder'))({
+  let sjb = new Builder({
     defaultJSExtensions: true,
     // baseURL: `${config.tmp}`,
     paths: {
@@ -143,7 +147,17 @@ gulp.task('serve.dev', ['compile.ts.watch', 'html.watch'], () => {
 
 // === PRODUCTION ===
 
-gulp.task('build', ['bundle.ts', 'html.prod']);
+gulp.task('concat.js', () => {
+  gulp
+      .src([
+        'node_modules/core-js/client/shim.min.js',
+        // 'node_modules/zone.js/dist/zone.min.js'
+      ])
+      .pipe(concat('vendor.js'))
+      .pipe(gulp.dest(`${config.prod}`))
+});
+
+gulp.task('build', ['bundle.ts', 'concat.js', 'html.prod']);
 
 gulp.task('serve.prod', ['build'], () => {
   bs.init({
